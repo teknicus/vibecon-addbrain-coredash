@@ -1,45 +1,40 @@
-'use client'
+import { connectDB } from '@/lib/mongodb';
+import { Card } from '@/lib/models/Card';
+import { User } from '@/lib/models/User';
+import { Board } from '@/components/kanban/Board';
 
-import { useEffect } from "react";
+const DEMO_USER_PHONE = '919995554710';
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await fetch('/api/');
-      const data = await response.json();
-      console.log(data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
+export default async function DashboardPage() {
+  await connectDB();
+  
+  const user = await User.findOneAndUpdate(
+    { whatsappNumber: DEMO_USER_PHONE },
+    { $setOnInsert: { whatsappNumber: DEMO_USER_PHONE } },
+    { upsert: true, new: true }
+  );
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
+  const cards = await Card.find({
+    userId: user._id.toString(),
+    isArchived: false,
+  })
+    .sort({ capturedAt: -1 })
+    .limit(200)
+    .lean();
+
+  const serialized = JSON.parse(JSON.stringify(cards));
 
   return (
     <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" alt="Emergent" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
-
-function App() {
-  return (
-    <div className="App">
-      <Home />
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+          🧠 AddBrain CORE
+        </h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          Organize • Review • Execute
+        </p>
+      </div>
+      <Board initialCards={serialized} />
     </div>
   );
 }
-
-export default App;
