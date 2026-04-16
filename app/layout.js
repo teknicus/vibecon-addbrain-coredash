@@ -5,7 +5,7 @@ import { Toaster } from 'sonner';
 import './globals.css';
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Board', Icon: LayoutDashboard },
+  { href: '/board', label: 'Board', Icon: LayoutDashboard },
   { href: '/inspect', label: 'Inspect', Icon: Search },
   { href: '/library', label: 'Library', Icon: BookOpen },
   { href: '/implement', label: 'Implement', Icon: Rocket },
