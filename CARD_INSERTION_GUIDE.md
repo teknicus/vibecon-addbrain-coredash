@@ -6,6 +6,20 @@
 - **Collection**: `cards`
 - **Connection**: `mongodb://localhost:27017` (from .env)
 
+## 🎯 Important: CORE Dashboard is Read-Only
+
+**CORE Dashboard does NOT enrich or process cards.** It is a pure visual layer that reads from MongoDB.
+
+External agents are responsible for:
+- ✅ Capturing messages/notes
+- ✅ AI enrichment (tags, topics, summaries, sentiment)
+- ✅ Direct MongoDB insertion
+
+The dashboard only:
+- 📊 Displays cards in Kanban board
+- ✏️ Allows status updates, tag editing, archiving
+- 🔍 Provides daily review and search
+
 ## Demo User Info
 
 ```javascript
@@ -63,37 +77,29 @@
 }
 ```
 
-## 3 Ways to Insert Cards
+## 2 Ways to Insert Cards
 
-### Option 1: REST API (Easiest - No DB Connection Needed)
+### Option 1: REST API (For Manual/UI Creation)
 
 ```bash
 curl -X POST http://localhost:3000/api/cards \
   -H "Content-Type: application/json" \
   -d '{
     "content": "Your message here",
-    "sourceType": "text"
+    "sourceType": "text",
+    "tags": ["product", "idea"],
+    "topic": "product idea",
+    "summary": "One sentence summary",
+    "sentiment": "positive"
   }'
 ```
 
-**Advantages:**
-- ✅ Automatic AI enrichment (if ANTHROPIC_API_KEY is set)
-- ✅ No need to manage DB connection
-- ✅ Handles user lookup automatically
-- ✅ Returns enriched card immediately
+**Notes:**
+- ⚠️ No AI enrichment happens server-side
+- External agents must provide enriched fields
+- Missing fields default to empty (tags: [], topic: '', summary: '', sentiment: 'neutral')
 
-### Option 2: WhatsApp Webhook (Already Implemented)
-
-Send POST to: `http://localhost:3000/api/webhook/whatsapp`
-
-Webhook automatically:
-1. Verifies HMAC signature
-2. Parses message (text/voice/image/doc)
-3. Enriches with Claude
-4. Inserts to MongoDB
-5. Sends WhatsApp confirmation
-
-### Option 3: Direct MongoDB Insertion
+### Option 2: Direct MongoDB Insertion (Recommended for Agents)
 
 ```javascript
 import mongoose from 'mongoose';
@@ -162,17 +168,14 @@ inbox → indexed → inspect → implement → done
 
 ## AI Enrichment
 
-If you have `ANTHROPIC_API_KEY` configured, cards are automatically enriched:
+⚠️ **CORE Dashboard does NOT perform AI enrichment.**
+
+External agents must enrich cards before insertion. Recommended enrichment:
 
 ```javascript
-// Input
+// External agent enriches BEFORE inserting
 {
-  content: "Read The Mom Test by Rob Fitzpatrick for customer interviews"
-}
-
-// After enrichment
-{
-  content: "Read The Mom Test by Rob Fitzpatrick for customer interviews",
+  content: "Read The Mom Test by Rob Fitzpatrick",
   tags: ["books", "startups", "customer-research"],
   topic: "customer interviews",
   summary: "Read The Mom Test book for customer research",
@@ -180,12 +183,12 @@ If you have `ANTHROPIC_API_KEY` configured, cards are automatically enriched:
 }
 ```
 
-Without API key, defaults are used:
+If fields are missing, defaults are used:
 ```javascript
 {
   tags: [],
-  topic: "uncategorised",
-  summary: content.slice(0, 60),
+  topic: "",
+  summary: content.slice(0, 60),  // First 60 chars of content
   sentiment: "neutral"
 }
 ```

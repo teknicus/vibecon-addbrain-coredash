@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import { Card } from '@/lib/models/Card';
 import { User } from '@/lib/models/User';
-import { enrichCard } from '@/lib/agent/enrichment';
 
 const DEMO_USER_PHONE = '919995554710';
 
@@ -58,24 +57,31 @@ export async function POST(request) {
   try {
     const userId = await getDemoUserId();
     const body = await request.json();
-    const { content, sourceType = 'manual', projectId } = body;
+    const { 
+      content, 
+      sourceType = 'manual', 
+      tags = [],
+      topic = '',
+      summary = '',
+      sentiment = 'neutral',
+      projectId 
+    } = body;
 
     if (!content?.trim()) {
       return NextResponse.json({ error: 'content is required' }, { status: 400 });
     }
 
-    const enrichment = await enrichCard(content);
-
+    // No enrichment - accept pre-enriched fields directly
     const card = await Card.create({
       userId,
       content,
       sourceType,
       projectId: projectId || undefined,
       status: 'indexed',
-      tags: enrichment.tags,
-      topic: enrichment.topic,
-      summary: enrichment.summary,
-      sentiment: enrichment.sentiment,
+      tags,
+      topic,
+      summary: summary || content.slice(0, 60),
+      sentiment,
     });
 
     const serialized = JSON.parse(JSON.stringify(card));

@@ -1,6 +1,22 @@
 # 🧠 AddBrain CORE Dashboard
 
-A full-stack WhatsApp-based personal knowledge management tool built with Next.js 14, MongoDB, and AI enrichment.
+A visual layer for WhatsApp-based personal knowledge management. CORE displays and manages cards inserted by external agents.
+
+## 🎯 Architecture
+
+**CORE Dashboard = Pure Visual Layer**
+
+- ✅ Reads cards from MongoDB
+- ✅ Displays in Kanban board
+- ✅ Allows status updates, tag editing, archiving
+- ✅ Provides daily review and search
+
+**External Agents = Capture + Enrichment**
+
+- External agents handle message capture (WhatsApp, email, etc.)
+- External agents perform AI enrichment (tags, topics, summaries)
+- External agents insert enriched cards directly to MongoDB
+- CORE displays the results
 
 ## 🎯 Features
 
@@ -15,18 +31,15 @@ A full-stack WhatsApp-based personal knowledge management tool built with Next.j
 ## 🏗️ Tech Stack
 
 - **Frontend**: Next.js 14 (App Router), React, Tailwind CSS, shadcn/ui
-- **Backend**: Next.js API Routes
+- **Backend**: Next.js API Routes (read/update only)
 - **Database**: MongoDB with Mongoose
-- **AI**: Claude (Anthropic) via @anthropic-ai/sdk
-- **WhatsApp**: Meta WhatsApp Business Cloud API
 - **Drag & Drop**: @hello-pangea/dnd
 
 ## 📋 Prerequisites
 
 - Node.js 18+ 
 - MongoDB (local or Atlas)
-- Anthropic API key
-- WhatsApp Business Cloud API credentials (optional for webhook)
+- External agents for card capture and enrichment
 
 ## 🚀 Quick Start
 
@@ -38,27 +51,14 @@ yarn install
 
 ### 2. Configure Environment Variables
 
-Copy `.env.local.example` to `.env.local`:
-
-```bash
-cp .env.local.example .env.local
-```
-
-Edit `.env.local` with your credentials:
+Edit `.env.local` with your MongoDB connection:
 
 ```env
-# MongoDB
+# MongoDB (Required)
 MONGODB_URI=mongodb://localhost:27017/addbrain
-
-# Anthropic AI
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-
-# WhatsApp (optional - for webhook)
-WHATSAPP_ACCESS_TOKEN=your_token
-WHATSAPP_PHONE_NUMBER_ID=your_phone_id
-WHATSAPP_WEBHOOK_VERIFY_TOKEN=your_verify_token
-WHATSAPP_APP_SECRET=your_app_secret
 ```
+
+That's it! No API keys needed - external agents handle enrichment.
 
 ### 3. Seed the Database
 
